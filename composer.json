@@ -1,6 +1,7 @@
 {
     "name": "stephane888/terms_display",
-    "type": "drupal-custom-module",
+    "type": "drupal-module-custom",
+    "description": "Termes display",
     "license": "MIT",
     "authors": [
         {
@@ -8,5 +9,6 @@
             "email": "kksasteph888@gmail.com"
         }
     ],
-    "require": {}
+    "require": {},
+    "minimum-stability": "dev"
 }
