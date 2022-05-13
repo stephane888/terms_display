@@ -1,0 +1,12 @@
+{
+    "name": "stephane888/terms_display",
+    "type": "drupal-custom-module",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "stephane888",
+            "email": "kksasteph888@gmail.com"
+        }
+    ],
+    "require": {}
+}

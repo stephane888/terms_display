@@ -1,0 +1,7 @@
+terms_display.example:
+  path: '/terms-display/example'
+  defaults:
+    _title: 'Example'
+    _controller: '\Drupal\terms_display\Controller\TermsDisplayController::build'
+  requirements:
+    _permission: 'access content'

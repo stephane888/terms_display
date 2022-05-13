@@ -1,0 +1,6 @@
+name: terms display
+type: module
+description: Format terms before display
+package: Custom
+core: 8.x
+core_version_requirement: ^8 || ^9

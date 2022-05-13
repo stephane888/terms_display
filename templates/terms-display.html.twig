@@ -1,0 +1,17 @@
+{% macro menu_tree_links(items) %}
+	{% for item in items %}
+		<li>
+			<div class="block-taxonomymenu__link {% if item.subitem %} content-sub-menu {% endif %} {% if route_tid == item.tid %}active block-taxonomymenu__link--active{% endif %}">
+				{{ item.term }}
+			</div>
+			{% if item.subitem %}
+				<ul class="menu hierarchical-term__menu--sub">
+					{{ _self.menu_tree_links(item.subitem) }}
+				</ul>
+			{% endif %}
+		</li>
+	{% endfor %}
+{% endmacro %}
+<ul class="menu hierarchical-term__menu">
+	{{ _self.menu_tree_links(items) }}
+</ul>

@@ -1,0 +1,24 @@
+{% macro menu_tree_links(items) %}
+	{% import _self as macros %}
+	{% for item in items %}
+		{% if item.subitem %}
+			{% set classSubmu= true %}
+		{% else %}
+			{% set classSubmu= false %}
+		{% endif %}
+		<li>
+			<div class="block-taxonomymenu__link {% if classSubmu %} content-sub-menu {% endif %} {% if route_tid == item.tid %}active block-taxonomymenu__link--active{% endif %}">
+				{{ item.term }}
+			</div>
+			{% if item.subitem %}
+				<ul class="menu hierarchical-term__menu--sub">
+					{{ macros.menu_tree_links(item.subitem) }}
+				</ul>
+			{% endif %}
+		</li>
+	{% endfor %}
+{% endmacro %}
+{% import _self as macros %}
+<ul class="menu hierarchical-term__menu">
+	{{ macros.menu_tree_links(items) }}
+</ul>
