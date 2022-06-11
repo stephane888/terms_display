@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
-use Drupal\wbumenudomain\WbumenudomainMenuItemDecorating;
+use Drupal\domain\DomainNegotiator;
 
 /**
  * Provides an example block.
@@ -85,7 +85,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
    * @param Connection $database
    * @param RequestStack $RequestStack
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityFieldManagerInterface $entity_field_manager, EntityTypeManagerInterface $entity_type_manager, LanguageManagerInterface $language_manager, ResettableStackedRouteMatchInterface $current_route_match, Connection $database, EntityTypeBundleInfoInterface $entity_type_bundle_info, RequestStack $RequestStack) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityFieldManagerInterface $entity_field_manager, EntityTypeManagerInterface $entity_type_manager, LanguageManagerInterface $language_manager, ResettableStackedRouteMatchInterface $current_route_match, Connection $database, EntityTypeBundleInfoInterface $entity_type_bundle_info, RequestStack $RequestStack, DomainNegotiator $DomainNegotiator) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityFieldManager = $entity_field_manager;
     $this->entityTypeManager = $entity_type_manager;
@@ -94,7 +94,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
     $this->database = $database;
     $this->entityTypeBundleInfo = $entity_type_bundle_info;
     $this->request = $RequestStack->getCurrentRequest();
-    $this->domain = WbumenudomainMenuItemDecorating::getCurrentActiveDomaineByUrl();
+    $this->domain = $DomainNegotiator->getActiveId();
   }
   
   /**
@@ -102,7 +102,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static($configuration, $plugin_id, $plugin_definition, $container->get('entity_field.manager'), $container->get('entity_type.manager'), $container->get('language_manager'), $container->get('current_route_match'), $container->get('database'), $container->get('entity_type.bundle.info'), $container->get('request_stack'));
+    return new static($configuration, $plugin_id, $plugin_definition, $container->get('entity_field.manager'), $container->get('entity_type.manager'), $container->get('language_manager'), $container->get('current_route_match'), $container->get('database'), $container->get('entity_type.bundle.info'), $container->get('request_stack'), $container->get('domain.negotiator'));
   }
   
   /**
@@ -157,7 +157,6 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
       $tree = $this->SelectLevel($tree, $min_depth);
     // $tree = [];
     // dump($tree);
-    
     
     return [
       '#theme' => 'terms_display',
