@@ -110,6 +110,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
    * {@inheritdoc}
    */
   public function build() {
+    // dump($this->configuration);
     $vocabulary = $this->configuration['vocabulary'];
     $base_term = !empty($this->configuration['base_term']) ? $this->configuration['base_term'] : 0;
     $max_depth = !empty($this->configuration['max_depth']) ? $this->configuration['max_depth'] : 0;
@@ -165,6 +166,13 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
     ];
   }
   
+  /**
+   *
+   * @param \Drupal\taxonomy\Entity\Term $term
+   * @param string $display_mode
+   * @param array $entitys
+   * @return array[]
+   */
   private function renderElment(\Drupal\taxonomy\Entity\Term $term, $display_mode = 'full', $entitys = []) {
     return [
       'tid' => $term->id(),
@@ -174,6 +182,13 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
     ];
   }
   
+  /**
+   *
+   * @param \Drupal\taxonomy\Entity\Term $term
+   * @param array $termes
+   * @param string $display_mode
+   * @param int $parent
+   */
   private function loadParentTerms(\Drupal\taxonomy\Entity\Term $term, array &$termes, $display_mode, int $parent = 0) {
     $parents = $this->getParentIds($term);
     // dump($term->getName());
@@ -465,17 +480,12 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
       // ])->distinct(TRUE)->condition('tid', $tid)->execute()->fetchCol();
     }
     else {
-      $query = ' select DISTINCT entity_id from `commerce_product__' . $field_name . '` as cpf ';
-      $query .= " 
-        INNER JOIN `commerce_product_field_data` AS fd ON ( fd.`product_id` = cpf.`entity_id` )";
-      $query .= " where " . $field_name . "_target_id = " . $tid . " and fd.`field_domain_access`='" . $this->domain . "'";
+      $query = ' select DISTINCT cpf.`entity_id` from `commerce_product__' . $field_name . '` as cpf ';
+      $query .= " INNER JOIN `commerce_product_field_data` AS fd ON ( fd.`product_id` = cpf.`entity_id` ) ";
+      $query .= " INNER JOIN `commerce_product__field_domain_access` AS cp_da ON ( cp_da.`entity_id` = cpf.`entity_id` ) ";
+      $query .= " where cpf." . $field_name . "_target_id = " . $tid . " and cp_da.`field_domain_access_target_id`='" . $this->domain . "'";
       $results = $this->database->query($query)->fetchCol();
       return $results;
-      // return $this->database->select('commerce_product__' . $field_name,
-      // 'cp')->fields('cp', [
-      // 'entity_id'
-      // ])->distinct(TRUE)->condition($field_name . '_target_id',
-      // $tid)->execute()->fetchCol();
     }
   }
   
