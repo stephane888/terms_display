@@ -28,7 +28,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
   const SHOW_COUNT_NONE = '0';
   const SHOW_COUNT_NODE = '1';
   const SHOW_COUNT_COMMERCE_PRODUCT = '2';
-  
+
   /**
    * Entity mapping.
    *
@@ -45,35 +45,35 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
-  
+
   /**
    * The language manager.
    *
    * @var \Drupal\Core\Language\LanguageManagerInterface
    */
   protected $languageManager;
-  
+
   /**
    * The current route match service.
    *
    * @var \Drupal\Core\Routing\CurrentRouteMatch
    */
   protected $currentRouteMatch;
-  
+
   /**
    * The the current primary database.
    *
    * @var \Drupal\Core\Database\Connection
    */
   protected $database;
-  
+
   /**
    *
    * @var \Symfony\Component\HttpFoundation\Request
    */
   protected $request;
   protected $domain;
-  
+
   /**
    *
    * @param array $configuration
@@ -94,9 +94,10 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
     $this->database = $database;
     $this->entityTypeBundleInfo = $entity_type_bundle_info;
     $this->request = $RequestStack->getCurrentRequest();
-    $this->domain = $DomainNegotiator->getActiveId();
+    if (!empty($DomainNegotiator->getActiveDomain()))
+      $this->domain = $DomainNegotiator->getActiveId();
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -104,7 +105,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static($configuration, $plugin_id, $plugin_definition, $container->get('entity_field.manager'), $container->get('entity_type.manager'), $container->get('language_manager'), $container->get('current_route_match'), $container->get('database'), $container->get('entity_type.bundle.info'), $container->get('request_stack'), $container->get('domain.negotiator'));
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -118,7 +119,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
     $display_mode = !empty($this->configuration['display_mode']) ? $this->configuration['display_mode'] : 'full';
     $show_count = $this->configuration['show_count'];
     $referencing_field = $this->configuration['referencing_field'];
-    
+
     /**
      *
      * @var \Drupal\taxonomy\TermStorage $EntityStorage
@@ -126,7 +127,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
     $EntityStorage = $this->entityTypeManager->getStorage('taxonomy_term');
     $vocabulary_tree = $EntityStorage->loadTree($vocabulary, $base_term, $max_depth + 1, true);
     $termes = [];
-    
+
     /**
      *
      * @var \Drupal\taxonomy\Entity\Term $term
@@ -151,21 +152,21 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
     if ('specialite_realisation_' == $vocabulary) {
       // dump($termes);
     }
-    
+
     $tree = $this->generateTree($termes, $base_term);
     // dump($tree);
     if ($min_depth)
       $tree = $this->SelectLevel($tree, $min_depth);
     // $tree = [];
     // dump($tree);
-    
+
     return [
       '#theme' => 'terms_display',
       '#items' => $tree,
       '#route_tid' => $this->getCurrentRoute()
     ];
   }
-  
+
   /**
    *
    * @param \Drupal\taxonomy\Entity\Term $term
@@ -181,7 +182,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
       'entities' => $entitys
     ];
   }
-  
+
   /**
    *
    * @param \Drupal\taxonomy\Entity\Term $term
@@ -200,11 +201,11 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
       }
     }
   }
-  
+
   private function getParentIds(\Drupal\taxonomy\Entity\Term $term) {
     return $term->get('parent')->offsetGet(0)->getValue();
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -214,7 +215,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
       '#type' => 'details',
       '#title' => $this->t('Basic settings')
     ];
-    
+
     $form['basic']['vocabulary'] = [
       '#title' => $this->t('Use taxonomy terms from this vocabulary to create a menu'),
       '#type' => 'select',
@@ -222,7 +223,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
       '#required' => TRUE,
       '#default_value' => $this->configuration['vocabulary']
     ];
-    
+
     $form['basic']['max_depth'] = [
       '#title' => $this->t('Number of sublevels to display'),
       '#type' => 'select',
@@ -242,26 +243,26 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
       ],
       '#default_value' => $this->configuration['max_depth']
     ];
-    
+
     $form['basic']['min_depth'] = [
       '#title' => $this->t('niveau minimal (level)'),
       '#type' => 'textfield',
       '#size' => 20,
       '#default_value' => $this->configuration['min_depth']
     ];
-    
+
     $form['basic']['display_mode'] = [
       '#title' => $this->t(" Mode d'affichage "),
       '#type' => 'textfield',
       '#size' => 20,
       '#default_value' => $this->configuration['display_mode']
     ];
-    
+
     $form['advanced'] = [
       '#type' => 'details',
       '#title' => $this->t(' Advanced settings ')
     ];
-    
+
     $form['advanced']['base_term'] = [
       '#type' => 'textfield',
       '#title' => $this->t(' Id du terme parent (terme de base) '),
@@ -278,7 +279,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
       ],
       '#default_value' => $this->configuration['show_count']
     ];
-    
+
     if (!empty($this->configuration['show_count']) && $this->configuration['show_count'] == 2)
       $form['advanced']['referencing_field'] = [
         '#type' => 'select',
@@ -309,7 +310,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
       ];
     return $form;
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -319,43 +320,43 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
       'basic',
       'vocabulary'
     ]);
-    
+
     $this->configuration['max_depth'] = $form_state->getValue([
       'basic',
       'max_depth'
     ]);
-    
+
     $this->configuration['min_depth'] = $form_state->getValue([
       'basic',
       'min_depth'
     ]);
-    
+
     $this->configuration['display_mode'] = $form_state->getValue([
       'basic',
       'display_mode'
     ]);
-    
+
     $this->configuration['base_term'] = $form_state->getValue([
       'advanced',
       'base_term'
     ]);
-    
+
     $this->configuration['show_count'] = $form_state->getValue([
       'advanced',
       'show_count'
     ]);
-    
+
     $this->configuration['referencing_field'] = $form_state->getValue([
       'advanced',
       'referencing_field'
     ]);
-    
+
     $this->configuration['calculate_count_recursively'] = $form_state->getValue([
       'advanced',
       'calculate_count_recursively'
     ]);
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -381,7 +382,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
       'calculate_count_recursively' => FALSE
     ];
   }
-  
+
   /**
    * Generates menu tree.
    */
@@ -395,7 +396,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
     }
     return $tree;
   }
-  
+
   /**
    * Generates vocabulary select options.
    */
@@ -409,7 +410,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
     }
     return $options;
   }
-  
+
   /**
    * Gets current route.
    */
@@ -419,7 +420,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
     }
     return NULL;
   }
-  
+
   /**
    *
    * @param array $tree
@@ -436,10 +437,10 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
       }
       $tree = $newtree;
     }
-    
+
     return $newtree;
   }
-  
+
   /**
    * Gets all entities referencing the given term.
    */
@@ -449,17 +450,17 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
     }
     else {
       $entity_ids = $this->getEntityIdsForTerm($entity_type_id, $field_name, $tid);
-      
+
       $child_tids = $this->entityTypeManager->getStorage('taxonomy_term')->loadTree($vocabulary, $tid);
-      
+
       foreach ($child_tids as $child_tid) {
         $entity_ids = array_merge($entity_ids, $this->getEntityIdsForTerm($entity_type_id, $field_name, $child_tid->tid));
       }
-      
+
       return $entity_ids;
     }
   }
-  
+
   /**
    * Gets entities referencing the given term.
    */
@@ -467,12 +468,14 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
     if (empty($field_name)) {
       return [];
     }
-    
+
     if ($entity_type_id == 'node') {
       $query = ' select DISTINCT cpf.entity_id from `node__' . $field_name . '` as cpf ';
       $query .= "
         INNER JOIN `node__field_domain_access` AS fd ON ( fd.`entity_id` = cpf.`entity_id` )";
-      $query .= " where cpf." . $field_name . "_target_id = " . $tid . " and fd.`field_domain_access_target_id`='" . $this->domain . "'";
+      $query .= " where cpf." . $field_name . "_target_id = " . $tid;
+      if ($this->domain)
+        $query .= " and fd.`field_domain_access_target_id`='" . $this->domain . "'";
       $results = $this->database->query($query)->fetchCol();
       return $results;
       // return $this->database->select('taxonomy_index', 'ta')->fields('ta', [
@@ -483,12 +486,14 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
       $query = ' select DISTINCT cpf.`entity_id` from `commerce_product__' . $field_name . '` as cpf ';
       $query .= " INNER JOIN `commerce_product_field_data` AS fd ON ( fd.`product_id` = cpf.`entity_id` ) ";
       $query .= " INNER JOIN `commerce_product__field_domain_access` AS cp_da ON ( cp_da.`entity_id` = cpf.`entity_id` ) ";
-      $query .= " where cpf." . $field_name . "_target_id = " . $tid . " and cp_da.`field_domain_access_target_id`='" . $this->domain . "'";
+      $query .= " where cpf." . $field_name . "_target_id = " . $tid;
+      if ($this->domain)
+        $query .= " and cp_da.`field_domain_access_target_id`='" . $this->domain . "'";
       $results = $this->database->query($query)->fetchCol();
       return $results;
     }
   }
-  
+
   /**
    * Gets taxonomy term fields from commerce product entity.
    *
@@ -512,5 +517,5 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
     }
     return $referencing_fields;
   }
-  
+
 }
