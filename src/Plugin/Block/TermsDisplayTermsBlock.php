@@ -73,6 +73,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
    */
   protected $request;
   protected $domain;
+  protected static $hasMultipleDomain = NULL;
 
   /**
    *
@@ -135,6 +136,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
     foreach ($vocabulary_tree as $term) {
       if (!empty($show_count)) {
         $entitys = $this->getEntityIds($this->entitiesMap[$show_count], $referencing_field, $term->id(), $vocabulary, $this->configuration['calculate_count_recursively']);
+
         if (!empty($entitys) && empty($termes[$term->id()])) {
           $termes[$term->id()] = $this->renderElment($term, $display_mode, $entitys);
           $this->loadParentTerms($term, $termes, $display_mode, $base_term);
@@ -149,12 +151,15 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
         ];
       }
     }
+
+    // dump($display_mode);
+
     if ('specialite_realisation_' == $vocabulary) {
       // dump($termes);
     }
 
     $tree = $this->generateTree($termes, $base_term);
-    // dump($tree);
+
     if ($min_depth)
       $tree = $this->SelectLevel($tree, $min_depth);
     // $tree = [];
@@ -469,13 +474,20 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
       return [];
     }
 
+    /**
+     * Cette requette ne permet pas d'afficher les elements references lorsqu'on
+     * est pas sur wb-horizon.
+     * Pour pallier à cela, on va verifier s'il ya plus d'un domaine.
+     */
     if ($entity_type_id == 'node') {
       $query = ' select DISTINCT cpf.entity_id from `node__' . $field_name . '` as cpf ';
-      $query .= "
+      if ($this->hasMultipleDomain()) {
+        $query .= "
         INNER JOIN `node__field_domain_access` AS fd ON ( fd.`entity_id` = cpf.`entity_id` )";
-      $query .= " where cpf." . $field_name . "_target_id = " . $tid;
-      if ($this->domain)
-        $query .= " and fd.`field_domain_access_target_id`='" . $this->domain . "'";
+        $query .= " where cpf." . $field_name . "_target_id = " . $tid;
+        if ($this->domain)
+          $query .= " and fd.`field_domain_access_target_id`='" . $this->domain . "'";
+      }
       $results = $this->database->query($query)->fetchCol();
       return $results;
       // return $this->database->select('taxonomy_index', 'ta')->fields('ta', [
@@ -485,13 +497,30 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
     else {
       $query = ' select DISTINCT cpf.`entity_id` from `commerce_product__' . $field_name . '` as cpf ';
       $query .= " INNER JOIN `commerce_product_field_data` AS fd ON ( fd.`product_id` = cpf.`entity_id` ) ";
-      $query .= " INNER JOIN `commerce_product__field_domain_access` AS cp_da ON ( cp_da.`entity_id` = cpf.`entity_id` ) ";
-      $query .= " where cpf." . $field_name . "_target_id = " . $tid;
-      if ($this->domain)
-        $query .= " and cp_da.`field_domain_access_target_id`='" . $this->domain . "'";
+      if ($this->hasMultipleDomain()) {
+        $query .= " INNER JOIN `commerce_product__field_domain_access` AS cp_da ON ( cp_da.`entity_id` = cpf.`entity_id` ) ";
+        $query .= " where cpf." . $field_name . "_target_id = " . $tid;
+        if ($this->domain)
+          $query .= " and cp_da.`field_domain_access_target_id`='" . $this->domain . "'";
+      }
+
       $results = $this->database->query($query)->fetchCol();
       return $results;
     }
+  }
+
+  /**
+   */
+  private function hasMultipleDomain() {
+    if (static::$hasMultipleDomain === NULL) {
+      $ids = \Drupal::entityQuery('domain')->execute();
+      if (count($ids) > 1) {
+        static::$hasMultipleDomain = true;
+      }
+      else
+        static::$hasMultipleDomain = false;
+    }
+    return static::$hasMultipleDomain;
   }
 
   /**
