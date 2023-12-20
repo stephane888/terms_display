@@ -470,6 +470,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
    * Gets entities referencing the given term.
    */
   private function getEntityIdsForTerm($entity_type_id, $field_name, $tid) {
+    return [];
     if (empty($field_name)) {
       return [];
     }
@@ -503,7 +504,6 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
         if ($this->domain)
           $query .= " and cp_da.`field_domain_access_target_id`='" . $this->domain . "'";
       }
-
       $results = $this->database->query($query)->fetchCol();
       return $results;
     }
@@ -545,6 +545,14 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
       }
     }
     return $referencing_fields;
+  }
+
+  /**
+   *
+   * {@inheritdoc}
+   * @see \Drupal\Core\Plugin\PreviewAwarePluginInterface::setInPreview()
+   */
+  public function setInPreview(bool $in_preview): void {
   }
 
 }

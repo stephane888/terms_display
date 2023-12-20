@@ -1,14 +1,14 @@
 {
-    "name": "stephane888/terms_display",
-    "type": "drupal-module-custom",
-    "description": "Termes display",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "stephane888",
-            "email": "kksasteph888@gmail.com"
-        }
-    ],
-    "require": {},
-    "minimum-stability": "dev"
+  "name": "stephane888/terms_display",
+  "type": "drupal-custom-module",
+  "description": "Termes display",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "stephane888",
+      "email": "kksasteph888@gmail.com"
+    }
+  ],
+  "require": {},
+  "minimum-stability": "dev"
 }
