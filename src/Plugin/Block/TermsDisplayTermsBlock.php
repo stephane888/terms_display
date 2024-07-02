@@ -76,6 +76,18 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
   protected static $hasMultipleDomain = NULL;
 
   /**
+   * @var EntityFieldManagerInterface  $entityFieldManager
+   */
+  protected $entityFieldManager;
+
+
+  /**
+   * @var EntityTypeBundleInfoInterface $entityTypeBundleInfo
+   * 
+   */
+  protected $entityTypeBundleInfo;
+
+  /**
    *
    * @param array $configuration
    * @param string $plugin_id
@@ -141,8 +153,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
           $termes[$term->id()] = $this->renderElment($term, $display_mode, $entitys);
           $this->loadParentTerms($term, $termes, $display_mode, $base_term);
         }
-      }
-      else {
+      } else {
         $termes[$term->id()] = [
           'tid' => $term->id(),
           'parents' => $term->parents,
@@ -452,8 +463,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
   private function getEntityIds($entity_type_id, $field_name, $tid, $vocabulary, $calculate_count_recursively) {
     if (!$calculate_count_recursively) {
       return $this->getEntityIdsForTerm($entity_type_id, $field_name, $tid);
-    }
-    else {
+    } else {
       $entity_ids = $this->getEntityIdsForTerm($entity_type_id, $field_name, $tid);
 
       $child_tids = $this->entityTypeManager->getStorage('taxonomy_term')->loadTree($vocabulary, $tid);
@@ -494,8 +504,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
       // return $this->database->select('taxonomy_index', 'ta')->fields('ta', [
       // 'nid'
       // ])->distinct(TRUE)->condition('tid', $tid)->execute()->fetchCol();
-    }
-    else {
+    } else {
       $query = ' select DISTINCT cpf.`entity_id` from `commerce_product__' . $field_name . '` as cpf ';
       $query .= " INNER JOIN `commerce_product_field_data` AS fd ON ( fd.`product_id` = cpf.`entity_id` ) ";
       if ($this->hasMultipleDomain()) {
@@ -516,8 +525,7 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
       $ids = \Drupal::entityQuery('domain')->execute();
       if (count($ids) > 1) {
         static::$hasMultipleDomain = true;
-      }
-      else
+      } else
         static::$hasMultipleDomain = false;
     }
     return static::$hasMultipleDomain;
@@ -554,5 +562,4 @@ class TermsDisplayTermsBlock extends BlockBase implements ContainerFactoryPlugin
    */
   public function setInPreview(bool $in_preview): void {
   }
-
 }
